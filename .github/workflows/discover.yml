@@ -1,0 +1,46 @@
+# Runs the plan-code discovery (`ovh_watch.py --list`) against the real OVH API from GitHub's
+# runners and commits the output to DISCOVERY.md. Run it manually from the Actions tab.
+name: discover
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [ovh_watch.py, .github/workflows/discover.yml]
+permissions:
+  contents: write
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: List Kimsufi configs + availability (US and CA APIs)
+        env:
+          OVH_ENDPOINTS: us,ca
+        run: |
+          {
+            echo "# Discovery output"
+            echo
+            echo "Generated $(date -u +%Y-%m-%dT%H:%MZ) by the discover workflow."
+            echo
+            echo "## KS-* plans"
+            echo '```'
+            python ovh_watch.py --list 'KS-' 2>&1 || echo "(exit code $?)"
+            echo '```'
+            echo
+            echo "## Anything with EPYC 7351P"
+            echo '```'
+            python ovh_watch.py --list '7351P' 2>&1 || echo "(exit code $?)"
+            echo '```'
+          } > DISCOVERY.md
+          cat DISCOVERY.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit DISCOVERY.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DISCOVERY.md
+          git diff --cached --quiet || git commit -m "Update DISCOVERY.md"
+          git push

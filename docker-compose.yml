@@ -1,0 +1,17 @@
+services:
+  ovh-stock-watch:
+    build: .
+    image: ovh-stock-watch:latest
+    container_name: ovh-stock-watch
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      STATE_PATH: /data/state.json
+    volumes:
+      - ovh-stock-watch-data:/data
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
+
+volumes:
+  ovh-stock-watch-data:

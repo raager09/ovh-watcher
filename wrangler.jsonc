@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ovh-watcher",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-01",
+  // Check every 3 minutes (Cloudflare cron, UTC).
+  "triggers": { "crons": ["*/3 * * * *"] },
+  "kv_namespaces": [{ "binding": "STATE", "id": "7af76b3282d64ca3aee62beef489bf70" }],
+  "observability": { "enabled": true },
+  // Keep variables/secrets added in the Cloudflare dashboard across deploys.
+  "keep_vars": true,
+  // Non-secret settings. Secrets (DISCORD_WEBHOOK_URL, DISCORD_MENTION, ORDER_URL, NTFY_TOKEN)
+  // go in the dashboard: Worker -> Settings -> Variables and Secrets.
+  "vars": {
+    "PLAN_CODES": "",
+    "DATACENTERS": "bhs,hil,vin",
+    "OVH_ENDPOINTS": "us,ca",
+    "STORAGE_INCLUDE": "nvme|ssd",
+    "STORAGE_EXCLUDE": "hdd|sata",
+    "MEMORY_INCLUDE": "",
+    "ALERT_LABEL": "KS-6 NVMe",
+    "HEARTBEAT_TIME": "09:00",
+    "TZ": "America/Toronto"
+  }
+}

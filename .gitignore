@@ -1,0 +1,7 @@
+.env
+state.json
+__pycache__/
+*.tmp
+node_modules/
+.wrangler/
+.dev.vars
