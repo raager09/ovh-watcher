@@ -26,6 +26,7 @@ type Item = { available: boolean; since: number; row?: Row };
 type State = {
   items: Record<string, Item>; lastOk?: number; watched?: number; fails?: number; firstFail?: number;
   nextAttempt?: number; lastErrPost?: number; lastHeartbeat?: string; announced?: boolean;
+  lastRun?: number; lastDiscordError?: string; lastDiscordOk?: number;
 };
 
 const ENDPOINTS: Record<string, [string, string]> = { us: ["US", "https://api.us.ovhcloud.com/1.0"], ca: ["CA", "https://ca.api.ovh.com/1.0"] };
@@ -40,6 +41,7 @@ const dcName = (dc: string) => DC_NAMES[dc] ?? dc.toUpperCase();
 const dcLabel = (dc: string) => `${dcName(dc)} (${dc})`;
 
 class ApiError extends Error {}
+let discordOutcome: { ok?: number; error?: string } = {};
 
 function config(env: Env) {
   const endpoints = csv(env.OVH_ENDPOINTS || "us").map((e): [string, string] => {
@@ -102,7 +104,7 @@ async function check(cfg: Cfg): Promise<Record<string, Row>> {
 
 // ------------------------------------------------------------------ notifiers
 async function postDiscord(cfg: Cfg, body: { embed?: object; content?: string; mention?: boolean }): Promise<boolean> {
-  const url = cfg.env.DISCORD_WEBHOOK_URL;
+  const url = (cfg.env.DISCORD_WEBHOOK_URL ?? "").trim();
   if (!url) return false;
   const text = [body.mention ? cfg.env.DISCORD_MENTION : "", body.content].filter(Boolean).join(" ");
   const payload: Record<string, unknown> = { embeds: body.embed ? [body.embed] : [] };
@@ -111,14 +113,20 @@ async function postDiscord(cfg: Cfg, body: { embed?: object; content?: string; m
     try {
       const r = await fetch(url + (url.includes("?") ? "&" : "?") + "wait=true", {
         method: "POST", headers: { "Content-Type": "application/json", "User-Agent": UA }, body: JSON.stringify(payload) });
-      if (r.ok) return true;
+      if (r.ok) {
+        discordOutcome.ok = Date.now();
+        return true;
+      }
       if (r.status === 429 && attempt === 0) {
         await new Promise((res) => setTimeout(res, Math.min(5000, 1000 * Number(r.headers.get("Retry-After") ?? 2))));
         continue;
       }
-      log("ERROR", "discord post failed", { status: r.status, body: (await r.text()).slice(0, 300) });
+      const body = (await r.text()).replace(/\s+/g, " ").slice(0, 300);
+      discordOutcome.error = `${new Date().toISOString()} HTTP ${r.status}: ${body}`;
+      log("ERROR", "discord post failed", { status: r.status, body });
       return false;
     } catch (e) {
+      discordOutcome.error = `${new Date().toISOString()} ${String(e)}`;
       log("ERROR", "discord post failed", { error: String(e) });
       return false;
     }
@@ -235,10 +243,11 @@ async function maybeHeartbeat(cfg: Cfg, state: State): Promise<void> {
 
 export async function runOnce(env: Env): Promise<State> {
   const cfg = config(env);
+  discordOutcome = {};
   const state: State = (await env.STATE.get<State>("state", "json")) ?? { items: {} };
   state.items ??= {};
   const now = Date.now();
-  if (!state.announced && cfg.env.DISCORD_WEBHOOK_URL) {  // only marked once Discord actually accepted it
+  if (!state.announced && cfg.env.DISCORD_WEBHOOK_URL?.trim()) {  // only marked once Discord actually accepted it
     state.announced = await postDiscord(cfg, { content: `✅ OVH stock watcher deployed on Cloudflare: watching ${cfg.planCodes.join(", ") || "⚠️ no PLAN_CODES set"} @ ${cfg.datacenters.join(", ")} (${cfg.endpoints.map((e) => e[0]).join("+")} API).` });
   }
   if (state.nextAttempt && now < state.nextAttempt) {
@@ -268,6 +277,9 @@ export async function runOnce(env: Env): Promise<State> {
     }
   }
   await maybeHeartbeat(cfg, state);
+  state.lastRun = now;
+  if (discordOutcome.ok) state.lastDiscordOk = discordOutcome.ok;
+  if (discordOutcome.error) state.lastDiscordError = discordOutcome.error;
   await env.STATE.put("state", JSON.stringify(state));
   return state;
 }
@@ -284,6 +296,11 @@ export default {
       plans: csv(env.PLAN_CODES), datacenters: csv(env.DATACENTERS || "bhs,hil,vin"),
       lastOk: s.lastOk ? new Date(s.lastOk).toISOString() : null, configsWatched: s.watched ?? 0,
       failures: s.fails ?? 0, inStock,
+      lastRun: s.lastRun ? new Date(s.lastRun).toISOString() : null,
+      webhookConfigured: !!env.DISCORD_WEBHOOK_URL?.trim(),
+      deployMessageSent: !!s.announced,
+      lastDiscordOk: s.lastDiscordOk ? new Date(s.lastDiscordOk).toISOString() : null,
+      lastDiscordError: s.lastDiscordError ?? null,
     });
   },
 } satisfies ExportedHandler<Env>;
