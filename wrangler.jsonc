@@ -9,6 +9,9 @@
   "observability": { "enabled": true },
   // Keep variables/secrets added in the Cloudflare dashboard across deploys.
   "keep_vars": true,
+  // No public URL: the cron trigger does all the work. Set both to true to re-enable the status page.
+  "workers_dev": false,
+  "preview_urls": false,
   // Non-secret settings. Secrets (DISCORD_WEBHOOK_URL, DISCORD_MENTION, ORDER_URL, NTFY_TOKEN)
   // go in the dashboard: Worker -> Settings -> Variables and Secrets.
   // KS-6 (EPYC 7351P) on the US API: 24sk602-v1-us = hil/vin, 24sk602-v1-ca = bhs (see DISCOVERY.md).

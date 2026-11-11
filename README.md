@@ -25,7 +25,7 @@ Notes:
 
 - The KV namespace `ovh-watcher-state` is already referenced in `wrangler.jsonc`.
 - Logs are under **Workers → ovh-watcher → Logs**.
-- The Worker's URL returns a read-only status JSON: last OK check, configs watched, and what's in stock.
+- The public `workers.dev` URL is turned off (`workers_dev: false`). The cron trigger doesn't need it. If you set it to `true`, the URL serves a read-only status JSON: last run, last Discord error, and what's in stock.
 - Usage per day: ~480 runs, a couple of OVH requests per run, and one KV write per run. That's well inside the Workers free plan (100k requests/day, 1,000 KV writes/day).
 - The schedule is fixed (`*/3 * * * *`), with no jitter. To change it, edit `triggers.crons`.
 - Non-secret settings live in `vars` in `wrangler.jsonc`. `keep_vars` is on, so anything you add in the dashboard survives deploys.
