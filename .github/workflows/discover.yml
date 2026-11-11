@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [ovh_watch.py, .github/workflows/discover.yml]
+    paths: [ovh_watch.py, .github/workflows/discover.yml, wrangler.jsonc]
 permissions:
   contents: write
 jobs:
@@ -34,6 +34,12 @@ jobs:
             echo "## Anything with EPYC 7351P"
             echo '```'
             python ovh_watch.py --list '7351P' 2>&1 || echo "(exit code $?)"
+            echo '```'
+            echo
+            echo "## Current watch config (wrangler.jsonc vars, via --once)"
+            echo '```'
+            PLAN_CODES=24sk602-v1-us,24sk602-v1-ca OVH_ENDPOINTS=us MEMORY_INCLUDE=128g \
+              python ovh_watch.py --once 2>&1 || echo "(exit code $? — 1 means nothing orderable right now)"
             echo '```'
           } > DISCOVERY.md
           cat DISCOVERY.md >> "$GITHUB_STEP_SUMMARY"

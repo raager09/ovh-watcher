@@ -16,7 +16,7 @@ Two ways to run it, with the same rules and messages:
 
 ## Cloudflare Worker (free)
 
-1. **Find the plan code.** Run the `discover` workflow from the repo's **Actions** tab. It also runs automatically when `ovh_watch.py` changes. It runs `--list` against the real OVH API (US + CA) and commits the result to `DISCOVERY.md`. Put the right plan code into `PLAN_CODES` in `wrangler.jsonc`.
+1. **Find the plan code.** Run the `discover` workflow from the repo's **Actions** tab. It also runs automatically when `ovh_watch.py` changes. It runs `--list` against the real OVH API (US + CA) and commits the result to `DISCOVERY.md`. For the KS-6 this is already set: `24sk602-v1-us` covers hil/vin and `24sk602-v1-ca` covers bhs, both on the US API.
 2. **Connect the repo.** In the Cloudflare dashboard, go to **Workers & Pages → Create → Import a repository** and pick this repo. Keep the defaults (deploy command `npx wrangler deploy`). Every push to `main` redeploys.
 3. **Add the secrets.** Open the Worker, go to **Settings → Variables and Secrets**, and add `DISCORD_WEBHOOK_URL` as a **Secret**. Optionally also add `DISCORD_MENTION` (e.g. `<@&roleid>`), `ORDER_URL`, `NTFY_TOPIC` and `NTFY_TOKEN`.
 4. **Wait for the first run.** Within 3 minutes Discord should get *"✅ OVH stock watcher deployed on Cloudflare…"*. That confirms the webhook works.
