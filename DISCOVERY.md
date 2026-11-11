@@ -1,6 +1,6 @@
 # Discovery output
 
-Generated 2026-11-11T01:34Z by the discover workflow.
+Generated 2026-11-11T01:54Z by the discover workflow.
 
 ## KS-* plans
 ```
@@ -122,7 +122,7 @@ PLAN CODE           NAME / CPU                      MEMORY              STORAGE 
 24sk50-v1-ca        KS-5 | Intel Xeon-E3 1270 v6    ram-32g-ecc-2400    softraid-3x4000sa                        -       unknown
 24sk50-v1-ca        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    hardraid-3x960ssd                        yes     unknown
 24sk50-v1-ca        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x1200nvme                      yes     unknown
-24sk50-v1-ca        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x2000sa                        -       unavailable
+24sk50-v1-ca        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x2000sa                        -       1H-low
 24sk50-v1-ca        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x4000sa                        -       unknown
 24sk50-v1-ca        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x450nvme                       yes     1H-low
 24sk50-v1-ca        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-3x4000sa                        -       unknown
@@ -396,7 +396,7 @@ PLAN CODE        NAME / CPU                      MEMORY              STORAGE    
 24sk50-v1        KS-5 | Intel Xeon-E3 1270 v6    ram-32g-ecc-2400    softraid-3x4000sa                        -       unknown
 24sk50-v1        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    hardraid-3x960ssd                        yes     unknown
 24sk50-v1        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x1200nvme                      yes     unknown
-24sk50-v1        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x2000sa                        -       unavailable
+24sk50-v1        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x2000sa                        -       1H-low
 24sk50-v1        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x4000sa                        -       unknown
 24sk50-v1        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-2x450nvme                       yes     1H-low
 24sk50-v1        KS-5 | Intel Xeon-E3 1270 v6    ram-64g-ecc-2400    softraid-3x4000sa                        -       unknown
