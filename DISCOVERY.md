@@ -1,6 +1,6 @@
 # Discovery output
 
-Generated 2026-11-11T01:33Z by the discover workflow.
+Generated 2026-11-11T01:34Z by the discover workflow.
 
 ## KS-* plans
 ```
@@ -533,4 +533,19 @@ PLAN CODE  NAME / CPU             MEMORY             STORAGE              DISK  
 24sk602    KS-6 | AMD Epyc 7351P  ram-256g-ecc-2400  softraid-2x8000sa          -       unavailable
 
 FILTER = passes STORAGE_INCLUDE/EXCLUDE and MEMORY_INCLUDE. Put the PLAN CODE into PLAN_CODES.
+```
+
+## Current watch config (wrangler.jsonc vars, via --once)
+```
+SUB  FQN                                                  DC   AVAILABILITY  ORDERABLE
+---  ---------------------------------------------------  ---  ------------  ---------
+US   24sk602-v1-ca.ram-128g-ecc-2400.softraid-2x1000nvme  bhs  unavailable   no
+US   24sk602-v1-ca.ram-128g-ecc-2400.softraid-2x500nvme   bhs  unavailable   no
+US   24sk602-v1-us.ram-128g-ecc-2400.softraid-2x1000nvme  hil  unavailable   no
+US   24sk602-v1-us.ram-128g-ecc-2400.softraid-2x1000nvme  vin  unavailable   no
+US   24sk602-v1-us.ram-128g-ecc-2400.softraid-2x500nvme   hil  unavailable   no
+US   24sk602-v1-us.ram-128g-ecc-2400.softraid-2x500nvme   vin  unavailable   no
+
+6 watched entries, 0 orderable.
+(exit code 1 — 1 means nothing orderable right now)
 ```
