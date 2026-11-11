@@ -25,7 +25,7 @@ type Row = { sub: string; fqn: string; plan: string; server: string; memory: str
 type Item = { available: boolean; since: number; row?: Row };
 type State = {
   items: Record<string, Item>; lastOk?: number; watched?: number; fails?: number; firstFail?: number;
-  nextAttempt?: number; lastErrPost?: number; lastHeartbeat?: string; started?: boolean;
+  nextAttempt?: number; lastErrPost?: number; lastHeartbeat?: string; announced?: boolean;
 };
 
 const ENDPOINTS: Record<string, [string, string]> = { us: ["US", "https://api.us.ovhcloud.com/1.0"], ca: ["CA", "https://ca.api.ovh.com/1.0"] };
@@ -238,9 +238,8 @@ export async function runOnce(env: Env): Promise<State> {
   const state: State = (await env.STATE.get<State>("state", "json")) ?? { items: {} };
   state.items ??= {};
   const now = Date.now();
-  if (!state.started) {
-    const ok = await postDiscord(cfg, { content: `✅ OVH stock watcher deployed on Cloudflare: watching ${cfg.planCodes.join(", ") || "⚠️ no PLAN_CODES set"} @ ${cfg.datacenters.join(", ")} (${cfg.endpoints.map((e) => e[0]).join("+")} API).` });
-    state.started = ok || !cfg.env.DISCORD_WEBHOOK_URL;
+  if (!state.announced && cfg.env.DISCORD_WEBHOOK_URL) {  // only marked once Discord actually accepted it
+    state.announced = await postDiscord(cfg, { content: `✅ OVH stock watcher deployed on Cloudflare: watching ${cfg.planCodes.join(", ") || "⚠️ no PLAN_CODES set"} @ ${cfg.datacenters.join(", ")} (${cfg.endpoints.map((e) => e[0]).join("+")} API).` });
   }
   if (state.nextAttempt && now < state.nextAttempt) {
     log("INFO", "backing off, skipping this run", { retryAt: new Date(state.nextAttempt).toISOString() });
