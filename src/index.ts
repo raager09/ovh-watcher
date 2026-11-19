@@ -14,6 +14,7 @@ export interface Env {
   DISCORD_MENTION?: string;
   ORDER_URL?: string;
   ALERT_LABEL?: string;
+  PLAN_LABELS?: string;
   NTFY_TOPIC?: string;
   NTFY_SERVER?: string;
   NTFY_TOKEN?: string;
@@ -25,7 +26,7 @@ type Row = { sub: string; fqn: string; plan: string; server: string; memory: str
 type Item = { available: boolean; since: number; row?: Row };
 type State = {
   items: Record<string, Item>; lastOk?: number; watched?: number; fails?: number; firstFail?: number;
-  nextAttempt?: number; lastErrPost?: number; lastHeartbeat?: string; announced?: boolean;
+  nextAttempt?: number; lastErrPost?: number; lastHeartbeat?: string; announced?: boolean; announcedFor?: string;
   lastRun?: number; lastDiscordError?: string; lastDiscordOk?: number;
 };
 
@@ -58,11 +59,14 @@ function config(env: Env) {
     storageExc: new RegExp(env.STORAGE_EXCLUDE || "hdd|sata", "i"),
     memoryInc: env.MEMORY_INCLUDE ? new RegExp(env.MEMORY_INCLUDE, "i") : null,
     label: env.ALERT_LABEL || "KS-6 NVMe",
+    // "planCode=Label,planCode=Label": per-plan names for alert titles (falls back to ALERT_LABEL).
+    planLabels: Object.fromEntries(csv(env.PLAN_LABELS).map((x) => x.split("=").map((y) => y.trim())).filter((x) => x.length === 2 && x[0] && x[1])),
     heartbeat: /^(off|none|disabled)$/i.test(env.HEARTBEAT_TIME ?? "") ? "" : env.HEARTBEAT_TIME || "09:00",
     tz: env.TZ || "UTC",
   };
 }
 type Cfg = ReturnType<typeof config>;
+const labelFor = (cfg: Cfg, plan: string) => cfg.planLabels[plan] ?? cfg.label;
 
 async function getJson(url: string): Promise<any> {
   let r: Response;
@@ -157,7 +161,7 @@ function fmtDuration(ms: number): string {
   return [[d, "d"], [h, "h"], [m, "m"]].filter(([v]) => v).map(([v, u]) => `${v}${u}`).join(" ") || "<1m";
 }
 
-export async function notifyInStock(cfg: Cfg, row: Row, label = cfg.label): Promise<boolean> {
+export async function notifyInStock(cfg: Cfg, row: Row, label = labelFor(cfg, row.plan)): Promise<boolean> {
   const now = Math.floor(Date.now() / 1000);
   const title = `🟢 ${label} in stock — ${dcName(row.dc)}`;
   const embed: Record<string, unknown> = {
@@ -182,7 +186,7 @@ export async function notifyInStock(cfg: Cfg, row: Row, label = cfg.label): Prom
 }
 
 async function notifyOutOfStock(cfg: Cfg, row: Row, lasted: number): Promise<void> {
-  const title = `🔴 ${cfg.label} out of stock again — ${dcName(row.dc)}`;
+  const title = `🔴 ${labelFor(cfg, row.plan)} out of stock again — ${dcName(row.dc)}`;
   const embed = {
     title, color: 0xe74c3c, timestamp: new Date().toISOString(),
     fields: [
@@ -247,8 +251,14 @@ export async function runOnce(env: Env): Promise<State> {
   const state: State = (await env.STATE.get<State>("state", "json")) ?? { items: {} };
   state.items ??= {};
   const now = Date.now();
-  if (!state.announced && cfg.env.DISCORD_WEBHOOK_URL?.trim()) {  // only marked once Discord actually accepted it
-    state.announced = await postDiscord(cfg, { content: `✅ OVH stock watcher deployed on Cloudflare: watching ${cfg.planCodes.join(", ") || "⚠️ no PLAN_CODES set"} @ ${cfg.datacenters.join(", ")} (${cfg.endpoints.map((e) => e[0]).join("+")} API).` });
+  // Announce on first deploy and whenever the watch list changes; only marked once Discord accepted it.
+  const watchList = `${cfg.planCodes.map((p) => (cfg.planLabels[p] ? `${cfg.planLabels[p]} (${p})` : p)).join(", ") || "⚠️ no PLAN_CODES set"} @ ${cfg.datacenters.join(", ")} (${cfg.endpoints.map((e) => e[0]).join("+")} API)`;
+  if (state.announcedFor !== watchList && cfg.env.DISCORD_WEBHOOK_URL?.trim()) {
+    const first = !state.announced && !state.announcedFor;
+    if (await postDiscord(cfg, { content: `${first ? "✅ OVH stock watcher deployed on Cloudflare" : "🔧 OVH stock watcher updated"}: watching ${watchList}.` })) {
+      state.announced = true;
+      state.announcedFor = watchList;
+    }
   }
   if (state.nextAttempt && now < state.nextAttempt) {
     log("INFO", "backing off, skipping this run", { retryAt: new Date(state.nextAttempt).toISOString() });
@@ -298,7 +308,7 @@ export default {
       failures: s.fails ?? 0, inStock,
       lastRun: s.lastRun ? new Date(s.lastRun).toISOString() : null,
       webhookConfigured: !!env.DISCORD_WEBHOOK_URL?.trim(),
-      deployMessageSent: !!s.announced,
+      deployMessageSent: !!s.announced, announcedFor: s.announcedFor ?? null,
       lastDiscordOk: s.lastDiscordOk ? new Date(s.lastDiscordOk).toISOString() : null,
       lastDiscordError: s.lastDiscordError ?? null,
     });

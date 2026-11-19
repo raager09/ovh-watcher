@@ -43,7 +43,7 @@ jobs:
             echo
             echo "## Current watch config (wrangler.jsonc vars, via --once)"
             echo '```'
-            PLAN_CODES=24sk602-v1-us,24sk602-v1-ca OVH_ENDPOINTS=us MEMORY_INCLUDE=128g \
+            PLAN_CODES=24sk602-v1-us,24sk602-v1-ca,27skle06-v1-ca OVH_ENDPOINTS=us MEMORY_INCLUDE=128g \
               python ovh_watch.py --once 2>&1 || echo "(exit code $? — 1 means nothing orderable right now)"
             echo '```'
           } > DISCOVERY.md

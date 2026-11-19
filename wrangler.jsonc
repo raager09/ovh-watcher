@@ -15,14 +15,16 @@
   // Non-secret settings. Secrets (DISCORD_WEBHOOK_URL, DISCORD_MENTION, ORDER_URL, NTFY_TOKEN)
   // go in the dashboard: Worker -> Settings -> Variables and Secrets.
   // KS-6 (EPYC 7351P) on the US API: 24sk602-v1-us = hil/vin, 24sk602-v1-ca = bhs (see DISCOVERY.md).
+  // KS-LE-6 (Black Friday, EPYC 7351P, 128 GB): 27skle06-v1-ca = bhs only.
   "vars": {
-    "PLAN_CODES": "24sk602-v1-us,24sk602-v1-ca",
+    "PLAN_CODES": "24sk602-v1-us,24sk602-v1-ca,27skle06-v1-ca",
     "DATACENTERS": "bhs,hil,vin",
     "OVH_ENDPOINTS": "us",
     "STORAGE_INCLUDE": "nvme|ssd",
     "STORAGE_EXCLUDE": "hdd|sata",
     "MEMORY_INCLUDE": "128g",
     "ALERT_LABEL": "KS-6 NVMe",
+    "PLAN_LABELS": "24sk602-v1-us=KS-6 NVMe,24sk602-v1-ca=KS-6 NVMe,27skle06-v1-ca=KS-LE-6 (Black Friday)",
     "HEARTBEAT_TIME": "09:00",
     "TZ": "America/Toronto"
   }

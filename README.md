@@ -133,6 +133,7 @@ a bind mount, make sure the directory is writable by UID 10001.
 | `DISCORD_MENTION` | | `<@&ROLE_ID>` or `<@USER_ID>`, pinged on in-stock alerts only |
 | `ORDER_URL` | | Linked from alerts (and the ntfy click action) |
 | `ALERT_LABEL` | `KS-6 NVMe` | Used in titles: `🟢 KS-6 NVMe in stock — Beauharnois, QC` |
+| `PLAN_LABELS` | | Worker only: per-plan title names, `planCode=Label,planCode=Label` (falls back to `ALERT_LABEL`) |
 | `NTFY_TOPIC` / `NTFY_SERVER` / `NTFY_TOKEN` | — / `https://ntfy.sh` / — | Optional ntfy push (priority high) |
 | `HEARTBEAT_TIME` | `09:00` | Local time (set `TZ`); `off` to disable |
 | `STATE_PATH` | `./state.json` (`/data/state.json` in Docker) | |
