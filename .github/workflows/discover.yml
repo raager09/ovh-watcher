@@ -31,6 +31,11 @@ jobs:
             python ovh_watch.py --list 'KS-' 2>&1 || echo "(exit code $?)"
             echo '```'
             echo
+            echo "## KS-LE (Black Friday / limited edition) plans"
+            echo '```'
+            python ovh_watch.py --list 'KS-LE|skle' 2>&1 || echo "(exit code $?)"
+            echo '```'
+            echo
             echo "## Anything with EPYC 7351P"
             echo '```'
             python ovh_watch.py --list '7351P' 2>&1 || echo "(exit code $?)"
